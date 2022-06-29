@@ -1,5 +1,6 @@
 package com.springboot.crud;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.crud.controller.UserController;
 import com.springboot.crud.model.User;
 import com.springboot.crud.repository.UserRepository;
@@ -32,21 +33,45 @@ public class UserControllerUnitTest {
     @MockBean
     private UserService userService;
 
+    public static String asJsonString(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testGetAllUsers() throws Exception {
         List<User> getAllUsers = new ArrayList<>();
-        User user1 = User.builder().id(1L).firstName("Rohan").lastName("Gupta").email("rohan@gmail.com").jobTitle("Java Developer")
+        User user1 = User.builder().id(1L).firstName("Rohan")
+                .lastName("Gupta").email("rohan@gmail.com").jobTitle("Java Developer")
                 .build();
-        User user2 = User.builder().id(2L).firstName("Disha").lastName("Gupta").email("disha@gmail.com").jobTitle("QA")
+        User user2 = User.builder().id(2L).firstName("Disha")
+                .lastName("Gupta").email("disha@gmail.com").jobTitle("QA")
                 .build();
-        User user3 = User.builder().id(2L).firstName("Amaira").lastName("Gupta").email("amaira@gmail.com").jobTitle("Baby")
+        User user3 = User.builder().id(2L).firstName("Amaira")
+                .lastName("Gupta").email("amaira@gmail.com").jobTitle("Baby")
                 .build();
         getAllUsers.add(user1);
         getAllUsers.add(user2);
         getAllUsers.add(user3);
-        Mockito.when(userRepository.findAll()).thenReturn(getAllUsers);
+        Mockito.when(userService.getAllUsers()).thenReturn(getAllUsers);
         mockMvc.perform(MockMvcRequestBuilders.get("/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void createNewUser() throws Exception {
+        User persistedUser = new User(1l, "Solution Architect", "Rohan", "Gupta", "rohangupta@gmail.com");
+        Mockito.when(userService.saveUser(Mockito.any())).thenReturn(persistedUser);
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                .content(asJsonString(new User
+                        (1l, "Solution Architect", "Rohan", "Gupta", "rohangupta@gmail.com")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists());
     }
 }
