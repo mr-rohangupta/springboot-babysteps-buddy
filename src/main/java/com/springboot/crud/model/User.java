@@ -2,7 +2,6 @@ package com.springboot.crud.model;
 
 import com.springboot.crud.dto.UserDto;
 import lombok.*;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

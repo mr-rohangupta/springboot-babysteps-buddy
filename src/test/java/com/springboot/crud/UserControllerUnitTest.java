@@ -13,10 +13,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author rohangupta
@@ -40,6 +41,7 @@ public class UserControllerUnitTest {
             throw new RuntimeException(e);
         }
     }
+
     @Test
     public void testGetAllUsers() throws Exception {
         List<User> getAllUsers = new ArrayList<>();
@@ -60,8 +62,9 @@ public class UserControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
+
     @Test
-    public void createNewUser() throws Exception {
+    public void testCreateNewUser() throws Exception {
         User persistedUser = new User(1l, "Solution Architect", "Rohan", "Gupta", "rohangupta@gmail.com");
         Mockito.when(userService.saveUser(Mockito.any())).thenReturn(persistedUser);
         mockMvc.perform(MockMvcRequestBuilders.post("/users")
@@ -71,5 +74,18 @@ public class UserControllerUnitTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists());
+    }
+
+    @Test
+    public void testGetUserById() throws Exception {
+        User user = User.builder().id(1L).firstName("Rohan")
+                .lastName("Gupta").email("rohan@gmail.com").jobTitle("Java Developer")
+                .build();
+        Mockito.when(userService.findById(Mockito.any())).thenReturn(Optional.ofNullable(user));
+        mockMvc.perform(MockMvcRequestBuilders.get("/users/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1));
     }
 }
