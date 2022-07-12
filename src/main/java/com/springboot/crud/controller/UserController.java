@@ -48,5 +48,19 @@ public class UserController {
         User persistedUser = userService.saveUser(user);
         return new ResponseEntity<>(persistedUser, HttpStatus.CREATED);
     }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable(value = "id") Long id,
+                                           @RequestBody User user) {
+        log.info("Request received for updating user ..");
+        User userFromDB = userService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found for id ::" + id));
+        userFromDB.setFirstName(user.getFirstName());
+        userFromDB.setLastName(user.getLastName());
+        userFromDB.setEmail(user.getEmail());
+        userFromDB.setJobTitle(user.getJobTitle());
+        final User updatedUser = userService.saveUser(userFromDB);
+        return ResponseEntity.ok(updatedUser);
+    }
 }
 
